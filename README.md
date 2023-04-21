@@ -33,7 +33,7 @@ chatgpt-api是一个将ChatGPT网站的功能转换成聊天API协议的工具�
 使用
 --
 
-要使用chatgpt-api，可向`http://127.0.0.1:8082/v1/chat/completes` 发送POST请求，接口定义与OpenAI一致，可参考 https://platform.openai.com/docs/api-reference/chat。这里是一个示例请求： （您需要将 `$CONFIG_API_KEY` 更改为 `[api_key]` 中配置的值。）
+要使用chatgpt-api，可向`http://127.0.0.1:8082/v1/chat/completes` 发送POST请求，接口定义与OpenAI一致，可参考https://platform.openai.com/docs/api-reference/chat. 这里是一个示例请求：（您需要将 `$CONFIG_API_KEY` 更改为 `[api_key]` 中配置的值。）
 
 
 ```
