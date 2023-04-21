@@ -2,16 +2,25 @@ from flask import Flask, request, Response
 from revChatGPT.V1 import Chatbot
 from ChatbotAgent import ChatbotAgent
 from ChatGPTServer import ChatGPTServer
+from UserToken import UserToken
 import time
+import os
 from gevent.pywsgi import WSGIServer
+import hashlib
 
 TOKEN = "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"
-USER_ID_SEP = "-0-"
+SCENE_ID_SEP = "-0-"
 
 app = Flask(__name__)
-agent = ChatbotAgent()
-chat_gpt_server = ChatGPTServer(agent)
 
+run_env = os.environ.get('RUN_ENV', '')
+config_file = 'config/config.ini'
+if run_env != '' and os.path.exists(f'config/config.%s.ini' % run_env) :
+    config_file = f'config/config.%s.ini' % run_env
+
+user_token = UserToken(config_file)
+agent = ChatbotAgent(config_file)
+chat_gpt_server = ChatGPTServer(agent)
 
 @app.route('/v1/chat/completions', methods=['POST'])
 def completions():
@@ -19,9 +28,8 @@ def completions():
         return Response("Forbidden: Invalid token.", status=403, mimetype='text/plain')
 
     messages = request.json.get('messages', [])
-    user_id = parse_user_id(request.headers) or 'default'
-    stream = request.json.get('stream', 1)
-    stream = True if stream == 1 else False
+    scene_id = parse_scene_id(request.headers) or 'default'
+    stream = bool(request.json.get('stream', True))
 
     final_response = ''
     system_content = ''
@@ -41,24 +49,27 @@ def completions():
 
     final_response = system_content + "\n" + final_response + "\n"
 
-    if final_response and user_id:
-        response_gen = chat_gpt_server.send_chunked_response(final_response, user_id, stream)
-        return Response(response_gen, headers={'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache'})
+    if final_response and scene_id:
+        response_gen = chat_gpt_server.send_chunked_response(final_response, scene_id, stream)
+        content_type = 'application/json'
+        if stream :
+            content_type = 'text/event-stream'
+        return Response(response_gen, headers={'Content-Type': content_type, 'Cache-Control': 'no-cache'})
     else:
         return Response("Bad Request.", status=400, mimetype='text/plain')
 
 
 def validate_token(headers):
     auth_header = headers.get('Authorization')
-    if not auth_header or auth_header.split(USER_ID_SEP)[0] != f"Bearer {TOKEN}":
+    if not auth_header or not user_token.is_valid(auth_header.split(SCENE_ID_SEP)[0].replace("Bearer ", "")):
         return False
     return True
 
-
-def parse_user_id(headers):
+def parse_scene_id(headers):
     auth_header = headers.get('Authorization')
-    return auth_header.replace("Bearer ", "").split(USER_ID_SEP)[-1]
-
+    hash_object = hashlib.md5()
+    hash_object.update(auth_header.encode())
+    return hash_object.hexdigest()
 
 if __name__ == "__main__":
     # app.run(host="0.0.0.0", port=8082)

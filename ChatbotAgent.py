@@ -1,5 +1,4 @@
 import configparser
-import os
 import redis
 import time
 import random
@@ -10,10 +9,8 @@ class ChatbotAgent:
         self.config = configparser.ConfigParser()
         self.config.read(config_file)
 
-        self.run_env = os.environ.get('RUN_ENV', 'test')
-
         # 获取 Redis 的配置
-        redis_section = 'redis_' + self.run_env
+        redis_section = 'redis'
         redis_host = self.config.get(redis_section, 'host')
         redis_port = self.config.getint(redis_section, 'port')
         redis_db = self.config.getint(redis_section, 'db')
@@ -39,14 +36,14 @@ class ChatbotAgent:
     def cleanup_expired_users(self):
         # 获取所有最后活跃时间距离当前时间超过一天的用户
         expired_users = [
-            user_id.decode() for user_id, last_active_time in self.redis.zrangebyscore(
+            scene_id.decode() for scene_id, last_active_time in self.redis.zrangebyscore(
                 'chat:last_active_time', 0, time.time() - 24 * 3600
             )
         ]
 
-        # 删除最后活跃时间距离当前时间超过一天的用户的 user_id 和 conversation_id 的关联关系
-        for user_id in expired_users:
-            result = self.get_conversation_id(user_id)
+        # 删除最后活跃时间距离当前时间超过一天的用户的 scene_id 和 conversation_id 的关联关系
+        for scene_id in expired_users:
+            result = self.get_conversation_id(scene_id)
             if result is None or len(result) == 0:
                 continue
             else:
@@ -54,8 +51,8 @@ class ChatbotAgent:
                 parent_id = result[1]
                 email = result[2]
                 if conversation_id:
-                    self.redis.delete(self.parse_user_conversation_key(user_id))
-                    self.redis.zrem('chat:last_active_time', user_id)
+                    self.redis.delete(self.parse_user_conversation_key(scene_id))
+                    self.redis.zrem('chat:last_active_time', scene_id)
 
                 if email and conversation_id :
                     email = email.decode()
@@ -118,19 +115,19 @@ class ChatbotAgent:
         else:
             return None
 
-    # 1. 获取 user_id 与 conversation_id 的关联关系
-    def get_conversation_id(self, user_id):
-        return self.redis.hmget(self.parse_user_conversation_key(user_id), ["conversation_id", "parent_id", "email"])
-    # 2. 设置 user_id 与 conversation_id 的关联关系
-    def set_conversation_id(self, user_id, conversation_id, parent_id, email):
-        cache_key = self.parse_user_conversation_key(user_id)
+    # 1. 获取 scene_id 与 conversation_id 的关联关系
+    def get_conversation_id(self, scene_id):
+        return self.redis.hmget(self.parse_user_conversation_key(scene_id), ["conversation_id", "parent_id", "email"])
+    # 2. 设置 scene_id 与 conversation_id 的关联关系
+    def set_conversation_id(self, scene_id, conversation_id, parent_id, email):
+        cache_key = self.parse_user_conversation_key(scene_id)
         self.redis.hset(cache_key, "conversation_id", conversation_id)
         self.redis.hset(cache_key, "parent_id", parent_id)
         self.redis.hset(cache_key, "email", email)
 
     # 更新用户的最后活跃时间
-    def update_last_active_time(self, user_id):
-        self.redis.zadd('chat:last_active_time', {user_id: time.time()})
+    def update_last_active_time(self, scene_id):
+        self.redis.zadd('chat:last_active_time', {scene_id: time.time()})
 
     def lock(self, email):
         key = self.get_account_lock_key(email)
@@ -155,5 +152,5 @@ class ChatbotAgent:
     def get_account_lock_key(self, email):
         return f'chat:account_lock:{email}'
 
-    def parse_user_conversation_key(self, user_id):
-        return f'chat:user_id:{user_id}:conversation_id'
+    def parse_user_conversation_key(self, scene_id):
+        return f'chat:scene_id:{scene_id}:conversation_id'
