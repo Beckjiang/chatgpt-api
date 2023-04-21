@@ -8,7 +8,6 @@ import os
 from gevent.pywsgi import WSGIServer
 import hashlib
 
-TOKEN = "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"
 SCENE_ID_SEP = "-0-"
 
 app = Flask(__name__)
