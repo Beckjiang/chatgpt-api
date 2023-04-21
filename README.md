@@ -3,6 +3,8 @@ chatgpt-api
 中文 | [English](./README_en.md) 
 
 chatgpt-api是一个将ChatGPT网站的功能转换成Chat API协议的工具。使用此工具，您可以轻松地将ChatGPT集成到自己的应用程序和聊天机器人中。
+目前项目只支持使用gpt3.5，等再运行长一些时间仍能保持稳定的话，再考虑支持plus用户的gpt-4模型（主要担心封号的风险）。
+
 (项目基于[revChatGPT](https://github.com/acheong08/ChatGPT)实现)
 
 安装
