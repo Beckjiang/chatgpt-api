@@ -1,8 +1,9 @@
 chatgpt-api
 ===========
-[English](./README_en.md) | 中文
+中文 | [English](./README_en.md) 
 
-chatgpt-api是一个将ChatGPT网站的功能转换成聊天API协议的工具。使用此工具，您可以轻松地将ChatGPT集成到自己的应用程序和聊天机器人中。
+chatgpt-api是一个将ChatGPT网站的功能转换成Chat API协议的工具。使用此工具，您可以轻松地将ChatGPT集成到自己的应用程序和聊天机器人中。
+(项目基于[revChatGPT](https://github.com/acheong08/ChatGPT)实现)
 
 安装
 --
@@ -20,7 +21,7 @@ chatgpt-api是一个将ChatGPT网站的功能转换成聊天API协议的工具�
     cd chatgpt-api
     ```
     
-3.  复制和配置 `config/config.ini` 文件，在 `[chatgpt_1]` 中填写您的电子邮件和访问令牌。
+3.  复制和配置 `config/config.ini` 文件，在 `[chatgpt_1]` 中填写您的email和access_token。
     
     ```arduino
     cp config/config.sample.ini config/config.ini
