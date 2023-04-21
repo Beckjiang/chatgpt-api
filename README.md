@@ -1,5 +1,6 @@
 
 # chatgpt-api
+English | [中文](./README_zh.md)
 
 chatgpt-api is a tool that converts the functionality of the ChatGPT website into a chat API protocol. With this tool, you can easily integrate ChatGPT into your own applications and chatbots.
 
