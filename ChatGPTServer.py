@@ -11,11 +11,12 @@ def generate_random_string(length):
 
 class ChatGPTServer:
     chatserver: ChatbotAgent = None
+    allow_custom_models = {'gpt-4': 'gpt-4'}
 
     def __init__(self, chatserver):
         self.chatserver: ChatbotAgent = chatserver
     
-    def format_to_api_struct(self, id, message, stream):
+    def format_to_api_struct(self, id, message, stream, model):
         if stream :
             choices = [{'index': 0, 'finish_reason': None, 'delta': {'content': message}}]
         else :
@@ -29,7 +30,7 @@ class ChatGPTServer:
             "id": id,
             "object": object,
             "created": int(time.time()),
-            "model": "gpt-3.5-turbo-0301",
+            "model": (model or "gpt-3.5-turbo-0301"),
             "choices": choices,
         }
         if not stream :
@@ -40,31 +41,31 @@ class ChatGPTServer:
             }
         return new_one
 
-    def send_first_chunk(self, id, data, email, stream):
-        self.chatserver.update_last_active_time(email)
+    def send_first_chunk(self, id, data, scene_id, email, stream, model):
+        self.chatserver.update_last_active_time(scene_id)
         new_conversation_id = data.get('conversation_id')
         parent_id = data.get('parent_id')
         if new_conversation_id and parent_id:
-            self.chatserver.set_conversation_id(email, new_conversation_id, parent_id, email)
+            self.chatserver.set_conversation_id(scene_id, new_conversation_id, parent_id, email)
 
         if stream:
-            role_response = self.format_to_api_struct(id, '', stream)
+            role_response = self.format_to_api_struct(id, '', stream, model)
             role_response['choices'] = [{'index': 0, 'finish_reason': None, 'delta': {'role': 'assistant'}}]
             msg = json.dumps(role_response)
             # print(f'send_first_chunk: {msg}')
             yield f"data: {msg}\n\n".encode('utf-8')
 
-    def send_stream_chunk(self, id, data, prev_text, stream):
+    def send_stream_chunk(self, id, data, prev_text, stream, model):
         resp_message = data.get('message')[len(prev_text):]
-        resp = self.format_to_api_struct(id, resp_message, stream)
+        resp = self.format_to_api_struct(id, resp_message, stream, model)
 
         if stream:
             msg = json.dumps(resp)
             # print(f'send_stream_chunk: {msg}')
             yield f"data: {msg}\n\n".encode('utf-8')
 
-    def send_final_chunk(self, id, last_one, stream):
-        resp = self.format_to_api_struct(id, last_one['message'], stream)
+    def send_final_chunk(self, id, last_one, stream, model):
+        resp = self.format_to_api_struct(id, last_one['message'], stream, model)
         if not stream:
             msg = json.dumps(resp)
             yield f"{msg}\n\n".encode('utf-8')
@@ -73,18 +74,23 @@ class ChatGPTServer:
             msg = json.dumps(resp)
             yield f"data: {msg}\n\n".encode('utf-8')
 
-        
+    def map_to_chatgpt_model(self, model):
+        if model == '':
+            return ''
+        else :
+            mapped = self.allow_custom_models.get(model, '')
+            return mapped
 
-    def execute_chat_response(self, chatbot, email, stream, message, conversation_id=None, parent_id=None):
+    def execute_chat_response(self, chatbot, scene_id, email, stream, message, conversation_id=None, parent_id=None, model=''):
         is_first = True
         last_one = {}
         prev_text = ""
         message_id = f'chatcmpl-%s' % generate_random_string(32)
 
         # print(f'execute_chat_response: {message}')
-        for data in chatbot.ask(prompt=message, conversation_id=conversation_id, parent_id=parent_id):
+        for data in chatbot.ask(prompt=message, conversation_id=conversation_id, parent_id=parent_id, model=model):
             if is_first:
-                yield from self.send_first_chunk(message_id, data, email, stream)
+                yield from self.send_first_chunk(message_id, data, scene_id, email, stream, model)
                 is_first = False
 
             if data.get('message') is None or len(data.get('message')) == 0:
@@ -95,15 +101,17 @@ class ChatGPTServer:
             # print(f'prev_text: {prev_text}')
             last_one = data.copy()
 
-            yield from self.send_stream_chunk(message_id, data, replace, stream)
+            yield from self.send_stream_chunk(message_id, data, replace, stream, model)
 
 
-        yield from self.send_final_chunk(message_id, last_one, stream)
+        yield from self.send_final_chunk(message_id, last_one, stream, model)
         if stream :
             msg = "data: [DONE]"
             yield f"{msg}\n\n".encode('utf-8')
 
-    def send_chunked_response(self, message, scene_id, stream):
+    def send_chunked_response(self, message, scene_id, stream, model = ''):
+        model = self.map_to_chatgpt_model(model)
+        
         result = self.chatserver.get_conversation_id(scene_id)
         if result is None or len(result) == 0:
             chatbot, email = self.chatserver.get_chatbot()
@@ -120,7 +128,7 @@ class ChatGPTServer:
 
         if self.chatserver.lock(email):
             try:
-                yield from self.execute_chat_response(chatbot, email, stream, message, conversation_id, parent_id)
+                yield from self.execute_chat_response(chatbot, scene_id, email, stream, message, conversation_id, parent_id, model)
             except Exception as e:
                 self.chatserver.unlock(email)
                 print(e)

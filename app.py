@@ -26,8 +26,9 @@ def completions():
     if not validate_token(request.headers):
         return Response("Forbidden: Invalid token.", status=403, mimetype='text/plain')
 
+    model = request.json.get('model', '')
     messages = request.json.get('messages', [])
-    scene_id = parse_scene_id(request.headers) or 'default'
+    scene_id = (parse_scene_id(request.headers) or 'default') + model
     stream = bool(request.json.get('stream', True))
 
     final_response = ''
@@ -49,7 +50,7 @@ def completions():
     final_response = system_content + "\n" + final_response + "\n"
 
     if final_response and scene_id:
-        response_gen = chat_gpt_server.send_chunked_response(final_response, scene_id, stream)
+        response_gen = chat_gpt_server.send_chunked_response(final_response, scene_id, stream, model)
         content_type = 'application/json'
         if stream :
             content_type = 'text/event-stream'
