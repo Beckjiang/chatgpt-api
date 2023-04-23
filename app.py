@@ -3,7 +3,7 @@ from revChatGPT.V1 import Chatbot
 from ChatbotAgent import ChatbotAgent
 from ChatGPTServer import ChatGPTServer
 from UserToken import UserToken
-import time
+import json
 import os
 from gevent.pywsgi import WSGIServer
 import hashlib
@@ -58,6 +58,66 @@ def completions():
     else:
         return Response("Bad Request.", status=400, mimetype='text/plain')
 
+@app.route('/v1/models/<model_id>', methods=['GET'])
+def model(model_id):
+    data = {
+        "id": model_id,
+        "object": "model",
+        "created": 1677649963,
+        "owned_by": "openai",
+        "permission": [
+            {
+            "id": "modelperm-yDCC5ePuUJKmUe3ld1q1pKvA",
+            "object": "model_permission",
+            "created": 1681938856,
+            "allow_create_engine": False,
+            "allow_sampling": True,
+            "allow_logprobs": True,
+            "allow_search_indices": False,
+            "allow_view": True,
+            "allow_fine_tuning": False,
+            "organization": "*",
+            "group": None,
+            "is_blocking": False
+            }
+        ],
+        "root": "gpt-3.5-turbo-0301",
+        "parent": None
+    }
+    return Response(json.dumps(data), headers={'Content-Type': 'application/json'})
+
+@app.route('/v1/models', methods=['GET'])
+def models():
+    data = {
+        'object': 'list',
+        'data': [
+            {
+                "id": "gpt-3.5-turbo-0301",
+                "object": "model",
+                "created": 1677649963,
+                "owned_by": "openai",
+                "permission": [
+                    {
+                    "id": "modelperm-yDCC5ePuUJKmUe3ld1q1pKvA",
+                    "object": "model_permission",
+                    "created": 1681938856,
+                    "allow_create_engine": False,
+                    "allow_sampling": True,
+                    "allow_logprobs": True,
+                    "allow_search_indices": False,
+                    "allow_view": True,
+                    "allow_fine_tuning": False,
+                    "organization": "*",
+                    "group": None,
+                    "is_blocking": False
+                    }
+                ],
+                "root": "gpt-3.5-turbo-0301",
+                "parent": None
+            }
+        ]
+    }
+    return Response(json.dumps(data), headers={'Content-Type': 'application/json'})
 
 def validate_token(headers):
     auth_header = headers.get('Authorization')
