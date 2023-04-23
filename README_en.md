@@ -2,7 +2,9 @@
 # chatgpt-api
 English | [中文](./README.md)
 
-chatgpt-api is a tool that converts the functionality of the ChatGPT website into a chat API protocol. With this tool, you can easily integrate ChatGPT into your own applications and chatbots.
+chatgpt-api is a tool that converts the functionality of the ChatGPT website into a chat API protocol. With this tool, you can easily integrate ChatGPT into your own applications and chatbots. It supports gpt3.5, gpt-4 (requires a plus account), and there is a possibility of being banned, so users are advised to use it at their own risk. 
+
+The project is implemented based on [revChatGPT](https://github.com/acheong08/ChatGPT) and defaults to using the [go-chatgpt-api](https://github.com/linweiyuan/go-chatgpt-api) proxy to bypass Cloudflare.
 
 ## Installation
 
