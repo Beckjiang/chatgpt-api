@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  app:
+    image: beckjiang/chatgpt-api
+    container_name: chatgpt_api
+    restart: unless-stopped
+    ports:
+      - '8082:8082'
+    volumes:
+      - ./config:/app/config
+    environment:
+      CHATGPT_BASE_URL: https://ai.fakeopen.com/api/
+      RUN_ENV: dev # 指定运行环境后，会读取对应的配置，比如：config/config.dev.ini
+      ACCOUNT_TYPE: free # 指定账号类型后，会读取对应的配置，比如：config/account.free.ini

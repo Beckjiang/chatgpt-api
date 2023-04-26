@@ -10,11 +10,11 @@ def generate_random_string(length):
     return result_str
 
 class ChatGPTServer:
-    chatserver: ChatbotAgent = None
+    chatagent: ChatbotAgent = None
     allow_custom_models = {'gpt-4': 'gpt-4'}
 
-    def __init__(self, chatserver):
-        self.chatserver: ChatbotAgent = chatserver
+    def __init__(self, chatagent):
+        self.chatagent: ChatbotAgent = chatagent
     
     def format_to_api_struct(self, id, message, stream, model):
         if stream :
@@ -42,11 +42,11 @@ class ChatGPTServer:
         return new_one
 
     def send_first_chunk(self, id, data, scene_id, email, stream, model):
-        self.chatserver.update_last_active_time(scene_id)
+        self.chatagent.update_last_active_time(scene_id)
         new_conversation_id = data.get('conversation_id')
         parent_id = data.get('parent_id')
         if new_conversation_id and parent_id:
-            self.chatserver.set_conversation_id(scene_id, new_conversation_id, parent_id, email)
+            self.chatagent.set_conversation_id(scene_id, new_conversation_id, parent_id, email)
 
         if stream:
             role_response = self.format_to_api_struct(id, '', stream, model)
@@ -112,29 +112,29 @@ class ChatGPTServer:
     def send_chunked_response(self, message, scene_id, stream, model = ''):
         model = self.map_to_chatgpt_model(model)
         
-        result = self.chatserver.get_conversation_id(scene_id)
+        result = self.chatagent.get_conversation_id(scene_id)
         if result is None or len(result) == 0:
-            chatbot, email = self.chatserver.get_chatbot()
+            chatbot, email = self.chatagent.get_chatbot()
             conversation_id = None
             parent_id = None
         else:
             conversation_id, parent_id, email = self.get_chat_info(result)
             if email:
-                chatbot, email = self.chatserver.get_chatbot(email)
+                chatbot, email = self.chatagent.get_chatbot(email)
             else:
-                chatbot, email = self.chatserver.get_chatbot()
+                chatbot, email = self.chatagent.get_chatbot()
 
         print(f'lock_email: {email}')
 
-        if self.chatserver.lock(email):
+        if self.chatagent.lock(email):
             try:
                 yield from self.execute_chat_response(chatbot, scene_id, email, stream, message, conversation_id, parent_id, model)
             except Exception as e:
-                self.chatserver.unlock(email)
+                self.chatagent.unlock(email)
                 print(e)
                 raise e
             finally:
-                self.chatserver.unlock(email)
+                self.chatagent.unlock(email)
         else:
             print('try get lock failed')
 

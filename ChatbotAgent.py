@@ -5,25 +5,27 @@ import random
 from revChatGPT.V1 import Chatbot
 
 class ChatbotAgent:
-    def __init__(self, config_file='config/config.ini'):
-        self.config = configparser.ConfigParser()
-        self.config.read(config_file)
+    def __init__(self, config_file='config/config.ini', account_file='config/account.ini'):
+        common_config = configparser.ConfigParser()
+        common_config.read(config_file)
+
+        account_config = configparser.ConfigParser()
+        account_config.read(account_file)
 
         # 获取 Redis 的配置
         redis_section = 'redis'
-        redis_host = self.config.get(redis_section, 'host')
-        redis_port = self.config.getint(redis_section, 'port')
-        redis_db = self.config.getint(redis_section, 'db')
+        redis_host = common_config.get(redis_section, 'host')
+        redis_port = common_config.getint(redis_section, 'port')
+        redis_db = common_config.getint(redis_section, 'db')
         self.redis = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
 
         # 获取 ChatGPT 的配置
         self.chatbots = {}
-        chatgpt_section_names = [section for section in self.config.sections() if section.startswith('chatgpt_')]
-        print(chatgpt_section_names)
+        chatgpt_section_names = [section for section in account_config.sections() if section.startswith('chatgpt_')]
         for chatgpt_section_name in chatgpt_section_names:
-            chatgpt_email = self.config.get(chatgpt_section_name, 'email')
-            # chatgpt_password = self.config.get(chatgpt_section_name, 'password')
-            access_token = self.config.get(chatgpt_section_name, 'access_token')
+            chatgpt_email = account_config.get(chatgpt_section_name, 'email')
+            # chatgpt_password = account_config.get(chatgpt_section_name, 'password')
+            access_token = account_config.get(chatgpt_section_name, 'access_token')
             print(f'chatgpt_email: {chatgpt_email}')
             self.use_email(chatgpt_email)
             self.chatbots[chatgpt_email] = Chatbot(config={
