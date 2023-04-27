@@ -17,8 +17,16 @@ config_file = 'config/config.ini'
 if run_env != '' and os.path.exists(f'config/config.%s.ini' % run_env) :
     config_file = f'config/config.%s.ini' % run_env
 
+account_type = os.environ.get('ACCOUNT_TYPE', '')
+account_file = 'config/account.ini'
+if account_file != '' and os.path.exists(f'config/account.%s.ini' % account_type) :
+    account_file = f'config/account.%s.ini' % account_type
+
+print(f'config_file: {config_file}')
+print(f'account_file: {account_file}')
+
 user_token = UserToken(config_file)
-agent = ChatbotAgent(config_file)
+agent = ChatbotAgent(config_file=config_file, account_file=account_file)
 chat_gpt_server = ChatGPTServer(agent)
 
 @app.route('/v1/chat/completions', methods=['POST'])
