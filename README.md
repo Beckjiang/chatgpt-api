@@ -3,7 +3,7 @@ chatgpt-api
 中文 | [English](./README_en.md) 
 
 chatgpt-api是一个将ChatGPT网站的功能转换成Chat API协议的工具。使用此工具，您可以轻松地将ChatGPT集成到自己的应用程序和聊天机器人中。
-支持gpt3.5、gpt-4(需plus账号)，不排除封号的可能，使用者请自行承担使用风险。
+支持gpt3.5、gpt-4(需plus账号)，使用者请自行承担使用风险。
 
 (项目基于[revChatGPT](https://github.com/acheong08/ChatGPT)实现，以及默认使用[go-chatgpt-api](https://github.com/linweiyuan/go-chatgpt-api)公开的代理绕过cloudflare)
 
@@ -12,25 +12,36 @@ chatgpt-api是一个将ChatGPT网站的功能转换成Chat API协议的工具。
 
 要安装chatgpt-api，请按照以下步骤操作：
 
-1.  克隆存储库到本地机器上。
+1.  克隆存储库到本地机器上
     ```bash
     git clone git@github.com:Beckjiang/chatgpt-api.git
     ```
     
-2.  进入项目目录。
+2.  进入项目目录
     
     ```bash
     cd chatgpt-api
     ```
     
-3.  复制和配置 `config/config.ini` 文件，在 `[chatgpt_1]` 中填写您的email和access_token。
+3.  复制示例配置文件 `config/config.ini` 和 `config/account.ini`
     
-    ```arduino
-    cp config/config.sample.ini config/config.ini
     ```
-    
-4.  在 `[api_key]` 中填写API密钥。
-5.  \[可选\] 使用 `docker build -t xx/xxx ./` 命令构建Docker镜像。
+    cp config/config.sample.ini config/config.ini
+    cp config/account.sample.ini config/account.ini
+    ```
+4.  在 `config/config.ini`中 `[api_key]` 填写自定义的API Key（用于访问接口）
+5.  在 `config/account.ini`中配置你的ChatGPT账号邮箱和token，可多个。
+    (access_token在这里获取 https://chat.openai.com/api/auth/session )
+    示例：
+    ```
+    [chatgpt_1]
+    email=youremail@xx.com
+    access_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiIxaDFyYmNtYm9AeXVud2VpbG9naW5taDMuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsidXNlcl9pZCI6InVzZXItZ2wyVmZJMUI3d3g5WlpITHVDZ0FBaldhIn0sImlzcyI6Imh0dHBzOxxxxxxxxxxxxxxxxxxx
+
+    [chatgpt_2]
+    email=youremail2@xx.com
+    access_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiIxaDFyYmNtYm9AeXVud2VpbG9naW5taDMuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsidXNlcl9pZCI6InVzZXItZ2wyVmZJMUI3d3g5WlpITHVDZ0FBaldhIn0sImlzcyI6Imh0dHBzOxxxxxxxxxxxxxxxxxxx
+    ```
 6.  运行应用程序，使用 `docker-compose up` 命令启动。
 
 使用
