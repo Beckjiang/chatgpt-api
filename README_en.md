@@ -10,21 +10,38 @@ The project is implemented based on [revChatGPT](https://github.com/acheong08/Ch
 
 To install chatgpt-api, follow these steps:
 
-1. Clone the repository to your local machine.
-```
-git clone git@github.com:Beckjiang/chatgpt-api.git
-```
-2. Navigate to the project directory.
-```
-cd chatgpt-api
-```
-3. Copy And Configure the `config/config.ini` file with your email and access token in `[chatgpt_1]`.
-```
-cp config/config.sample.ini config/config.ini
-```
-4. Configure the `config/config.ini` file with API Key in `[api_key]`.
-5. [OPTIONAL]Build the Docker image by running `docker build -t xx/xxx ./`
-6. Run the application using `docker-compose up`
+1. Clone the repository to your local machine:
+   ```bash
+   git clone git@github.com:Beckjiang/chatgpt-api.git
+   ```
+
+2. Navigate to the project directory:
+   ```bash
+   cd chatgpt-api
+   ```
+
+3. Copy the sample configuration files `config/config.sample.ini` and `config/account.sample.ini`:
+   ```
+   cp config/config.sample.ini config/config.ini
+   cp config/account.sample.ini config/account.ini
+   ```
+
+4. In the `config/config.ini` file, fill in your custom API Key under `[api_key]`.
+
+5. Configure your ChatGPT account email and token in the `config/account.ini` file. You can configure multiple accounts.
+   (Access tokens can be obtained here: https://chat.openai.com/api/auth/session)
+   Example:
+   ```
+   [chatgpt_1]
+   email=youremail@xx.com
+   access_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiIxaDFyYmNtYm9AeXVud2VpbG9naW5taDMuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsidXNlcl9pZCI6InVzZXItZ2wyVmZJMUI3d3g5WlpITHVDZ0FBaldhIn0sImlzcyI6Imh0dHBzOxxxxxxxxxxxxxxxxxxx
+
+   [chatgpt_2]
+   email=youremail2@xx.com
+   access_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiIxaDFyYmNtYm9AeXVud2VpbG9naW5taDMuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsidXNlcl9pZCI6InVzZXItZ2wyVmZJMUI3d3g5WlpITHVDZ0FBaldhIn0sImlzcyI6Imh0dHBzOxxxxxxxxxxxxxxxxxxx
+   ```
+
+6. Run the application by executing the `docker-compose up` command to
 ## Usage
 
 To use chatgpt-api, make a POST request to http://127.0.0.1:8082/v1/chat/completes with a JSON payload containing the message you want to send to OpenAI(https://platform.openai.com/docs/api-reference/chat). Here's an example request:
