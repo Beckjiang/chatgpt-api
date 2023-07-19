@@ -1,0 +1,36 @@
+version: '3'
+services:
+  app:
+    image: beckjiang/chatgpt-api
+    container_name: chatgpt_api
+    restart: unless-stopped
+    ports:
+      - '8082:8082'
+    volumes:
+      - ./config:/app/config
+    environment:
+      CHATGPT_BASE_URL: http://go-chatgpt-api:8080/chatgpt/backend-api/
+
+  redis:
+    image: redis
+    ports:
+      - "6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      retries: 5
+
+  go-chatgpt-api:
+    container_name: go-chatgpt-api
+    image: linweiyuan/go-chatgpt-api
+    environment:
+      - TZ=Asia/Shanghai
+      - PROXY=socks5://chatgpt-proxy-server-warp:65535
+    depends_on:
+      - chatgpt-proxy-server-warp
+    restart: unless-stopped
+
+  chatgpt-proxy-server-warp:
+    container_name: chatgpt-proxy-server-warp
+    image: linweiyuan/chatgpt-proxy-server-warp
+    restart: unless-stopped
